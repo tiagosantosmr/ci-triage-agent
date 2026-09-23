@@ -1,0 +1,23 @@
+[project]
+name = "ci-triage-agent"
+version = "0.1.0"
+description = "Triages failing CI runs on a real GitHub repo: classifies the failure, retrieves similar past fixes, and either patches real bugs or comments with its reasoning."
+requires-python = ">=3.9"
+dependencies = [
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",
+    "langchain-community>=0.3",
+    "pydantic>=2",
+    "PyGithub>=2.3",
+    "faiss-cpu>=1.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
