@@ -19,7 +19,7 @@ def get_model(temperature: float = 0):
         return ChatOpenAI(
             base_url=os.environ["LLM_BASE_URL"],
             api_key=os.environ["LLM_API_KEY"],
-            model=os.environ.get("LLM_MODEL", "gpt-4o-mini"),
+            model=os.environ.get("LLM_MODEL", "claude-sonnet-5"),
             temperature=temperature,
         )
 
@@ -31,7 +31,7 @@ def get_model(temperature: float = 0):
     if os.environ.get("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
 
-        return ChatAnthropic(model="claude-sonnet-4-5", temperature=temperature)
+        return ChatAnthropic(model="claude-sonnet-5", temperature=temperature)
 
     raise RuntimeError(
         "No LLM configured. Set LLM_BASE_URL + LLM_API_KEY (any OpenAI-compatible "

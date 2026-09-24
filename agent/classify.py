@@ -43,6 +43,9 @@ _PROMPT = ChatPromptTemplate.from_messages([
 
 
 def classify_failure(title: str, diff: str, ci_log: str) -> Triage:
-    model = get_model().with_structured_output(Triage)
+    # method="function_calling": not every OpenAI-compatible endpoint (e.g. a
+    # proxy in front of a non-OpenAI model) supports the native json_schema
+    # structured-output mode, but tool calling is much more widely supported.
+    model = get_model().with_structured_output(Triage, method="function_calling")
     chain = _PROMPT | model
     return chain.invoke({"title": title, "diff": diff, "ci_log": ci_log})
