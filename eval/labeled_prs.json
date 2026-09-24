@@ -1,0 +1,9 @@
+{
+  "repo": "tiagosantosmr/triage-demo",
+  "cases": [
+    {"pr": 1, "true_category": "real_bug", "note": "unconditional -1 in apply_discount breaks correct totals"},
+    {"pr": 2, "true_category": "flaky_test", "note": "timing assertion too tight for shared CI runners"},
+    {"pr": 3, "true_category": "dependency_issue", "note": "imports numpy, never added to pyproject.toml"},
+    {"pr": 4, "true_category": "unclear", "note": "test's stated rounding policy conflicts with existing implementation"}
+  ]
+}
