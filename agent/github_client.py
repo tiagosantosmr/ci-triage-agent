@@ -53,6 +53,25 @@ def comment_on_pr(repo: str, pr_number: int, body: str) -> None:
     _run_gh("pr", "comment", str(pr_number), "--repo", repo, "--body", body)
 
 
+def push_fix_commit(local_path, branch: str, file_path: str, new_content: str, message: str) -> str:
+    """Checks out `branch` for real (not a detached worktree), writes the
+    fix, commits, and pushes. Returns the new commit sha. Only call this
+    after the fix has already passed in an isolated sandbox."""
+    subprocess.run(["git", "checkout", branch], cwd=local_path, check=True, capture_output=True)
+    subprocess.run(["git", "pull", "--ff-only"], cwd=local_path, check=True, capture_output=True)
+
+    (local_path / file_path).write_text(new_content)
+
+    subprocess.run(["git", "add", file_path], cwd=local_path, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", message], cwd=local_path, check=True, capture_output=True)
+    subprocess.run(["git", "push", "origin", branch], cwd=local_path, check=True, capture_output=True)
+
+    sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=local_path, check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    return sha
+
+
 def get_pr_diff(repo: str, pr_number: int) -> str:
     return _run_gh("pr", "diff", str(pr_number), "--repo", repo)
 
