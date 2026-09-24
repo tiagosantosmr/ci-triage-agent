@@ -1,11 +1,17 @@
 """RAG over a target repo's own git history. The commit that fixed the
 negative-price parsing bug in triage-demo, for example, should be one of
-the top hits when triaging a new failure that looks similar."""
+the top hits when triaging a new failure that looks similar.
+
+Embeddings run locally (sentence-transformers), deliberately independent of
+whichever chat model provider is configured in llm.py - retrieval shouldn't
+need an API key at all."""
 
 import subprocess
 from pathlib import Path
 
+from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain_core.vectorstores import VectorStore
 
 CACHE_DIR = Path.home() / ".cache" / "ci-triage-agent" / "repos"
 
@@ -57,3 +63,17 @@ def load_commit_documents(local_path: Path, branch: str = "main") -> list[Docume
             )
         )
     return documents
+
+
+def _get_embeddings():
+    from langchain_huggingface import HuggingFaceEmbeddings
+
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+
+def build_index(documents: list[Document]) -> VectorStore:
+    return FAISS.from_documents(documents, _get_embeddings())
+
+
+def retrieve_similar_commits(index: VectorStore, query: str, k: int = 3) -> list[Document]:
+    return index.similarity_search(query, k=k)
