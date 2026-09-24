@@ -53,6 +53,10 @@ def comment_on_pr(repo: str, pr_number: int, body: str) -> None:
     _run_gh("pr", "comment", str(pr_number), "--repo", repo, "--body", body)
 
 
+def get_pr_diff(repo: str, pr_number: int) -> str:
+    return _run_gh("pr", "diff", str(pr_number), "--repo", repo)
+
+
 def get_failed_log(repo: str, head_sha: str) -> str:
     """Concatenated failed-step logs from the most recent CI run against head_sha."""
     runs_json = _run_gh("api", f"repos/{repo}/actions/runs?head_sha={head_sha}")
