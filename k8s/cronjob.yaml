@@ -1,0 +1,39 @@
+# Runs the agent against all open PRs on a schedule, instead of a
+# Deployment+Service: this is a CLI tool with no server to keep alive,
+# so a long-running Pod would just idle. A CronJob spins up a fresh Pod,
+# runs to completion, and tears down.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ci-triage-agent
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ci-triage-agent
+              image: ci-triage-agent:local
+              imagePullPolicy: IfNotPresent
+              # $(VAR) substitution in args only expands vars listed under
+              # env, not envFrom, so TARGET_REPO needs its own entry here.
+              args:
+                - triage
+                - --repo
+                - $(TARGET_REPO)
+                - --all-open
+              env:
+                - name: TARGET_REPO
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ci-triage-config
+                      key: TARGET_REPO
+              envFrom:
+                - configMapRef:
+                    name: ci-triage-config
+                - secretRef:
+                    name: ci-triage-secrets

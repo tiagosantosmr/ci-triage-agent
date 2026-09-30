@@ -60,6 +60,33 @@ python -m agent.cli triage --repo tiagosantosmr/triage-demo --pr 1
 python -m agent.cli triage --repo tiagosantosmr/triage-demo --all-open
 ```
 
+## Running on Kubernetes
+
+`k8s/` has a `CronJob`, not a `Deployment`: this is a CLI tool invoked
+per-PR, not a server, so there's nothing to keep alive between runs. The
+CronJob spins up a fresh Pod on a schedule (`--all-open`), runs to
+completion, and tears down.
+
+```
+docker build -t ci-triage-agent:local .
+kind load docker-image ci-triage-agent:local --name <your-cluster>   # skip on a real cluster with registry access
+
+kubectl create secret generic ci-triage-secrets \
+  --from-literal=GH_TOKEN="$(gh auth token)" \
+  --from-literal=LLM_BASE_URL="https://your-proxy/v1" \
+  --from-literal=LLM_API_KEY="sk-..."
+
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/cronjob.yaml
+
+# trigger a one-off run without waiting for the schedule
+kubectl create job ci-triage-manual-test --from=cronjob/ci-triage-agent
+kubectl logs -f job/ci-triage-manual-test
+```
+
+See `k8s/secret.example.yaml` for the fields the Secret needs; never commit
+the real values.
+
 ## Eval
 
 ```
