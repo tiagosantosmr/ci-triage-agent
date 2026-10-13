@@ -19,19 +19,13 @@ spec:
             - name: ci-triage-agent
               image: ci-triage-agent:local
               imagePullPolicy: IfNotPresent
-              # $(VAR) substitution in args only expands vars listed under
-              # env, not envFrom, so TARGET_REPO needs its own entry here.
+              # $(TARGET_REPO) is expanded by Kubernetes from the container's
+              # environment, which includes variables loaded through envFrom.
               args:
                 - triage
                 - --repo
                 - $(TARGET_REPO)
                 - --all-open
-              env:
-                - name: TARGET_REPO
-                  valueFrom:
-                    configMapKeyRef:
-                      name: ci-triage-config
-                      key: TARGET_REPO
               envFrom:
                 - configMapRef:
                     name: ci-triage-config
